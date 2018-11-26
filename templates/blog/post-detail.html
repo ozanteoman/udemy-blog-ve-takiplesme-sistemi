@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% load  static %}
+{% block title %}
+    Post List
+{% endblock %}
+
+{% block ust_icerik %}
+
+{% endblock %}
+
+
+{% block icerik %}
+    <div class="row">
+    <div class="col-lg-12">
+
+        <div class="col-lg-8 col-lg-offset-2">
+            <h2 class="page-header"><a href="{% url 'post-list' %}">
+                <span class="glyphicon glyphicon-circle-arrow-left"></span></a>
+                <a style="vertical-align:top" href="#">{{ blog.title|upper }}</a>
+                {{ blog.get_yayin_taslak_html }}
+                <a href="{% url 'add-remove-favorite' blog.slug %}?next={% url 'post-detail' blog.slug %}"
+                   class="btn btn-sm btn-default">
+                    <span class="glyphicon glyphicon-star {% if request.user.username in blog.get_added_favorite_user %}active{% endif %}"></span>
+                </a>
+                <small class="pull-right"><span class="glyphicon glyphicon-time"></span> {{ blog.created_date }}
+                </small>
+            </h2>
+            {% if blog.get_image %}
+                <div class="row">
+                    <div class="col-lg-12">
+                        <p><b><span class="glyphicon glyphicon-user"></span>
+                            Yazar {{ blog.user.userprofile.get_screen_name }}</b></p>
+                        <img class="img-responsive" src="{{ blog.get_image }}">
+                    </div>
+                </div>
+            {% endif %}
+            <div class="row">
+                <div class="col-lg-12">
+                    <p class="lead">
+                        {{ blog.icerik|safe }}
+                    </p>
+                    <p class="lead">
+                        Kategoriler : {{ blog.kategoriler.all|join:',' }}
+                    </p>
+                </div>
+            </div>
+            {% if request.user == blog.user %}
+                <div class="row">
+                    <br>
+                    <div class="col-lg-3">
+                        <a class="btn btn-primary btn-sm" href="{% url 'post-update' blog.slug %}">Güncelle</a>
+                        <a class="btn btn-danger btn-sm" href="{% url 'post-delete' blog.slug %}">Sil</a>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="row">
+                <h2 class="page-header">Yorumlar ({{ blog.get_blog_comment_count }})</h2>
+                <div class="col-lg-12">
+                    {% for comment in blog.get_blog_comment %}
+                        <div class="row" style="margin-bottom:30px">
+                            <div class="col-lg-2">
+                                <div class="col-lg-12">
+                                    <img style="height: 50px;" class="img-circle"
+                                         src="{{ comment.user.userprofile.get_profile_photo }}">
+                                </div>
+                            </div>
+                            <div style="padding-left:0" class="col-lg-10">
+                                <span><b>{{ comment.user.userprofile.get_screen_name }}</b></span>
+                                <span>{{ comment.icerik }}</span>
+                                <br>
+                                <span class="pull-right"><b>{{ comment.comment_date }}</b></span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="row" style="margin-top: 50px;">
+                    <form action="{% url 'add-comment' blog.slug %}" method="post">
+                        {% csrf_token %}
+                        {{ form.media }}
+                        {% for field in form %}
+                            <div class="row">
+                                <div class="col-lg-2">
+                                    <div class="col-lg-12">
+                                        <img style="height:75px;" class="img-circle"
+                                             src="{{ request.user.userprofile.get_profile_photo }}">
+                                    </div>
+                                </div>
+                                <div class="col-lg-10">
+                                    <div class="form-group">
+                                        {{ field.label_tag }}
+                                        {{ field }}
+                                        {% if field.errors %}
+                                            {% for error in field.errors %}
+                                                <span class="text-danger"><b>{{ error }}</b></span>
+                                            {% endfor %}
+                                        {% else %}
+                                            {% if field.help_text %}
+                                                <span class="text-success"><b>{{ field.help_text }}</b></span>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-group">
+                                    <input type="submit" value="Yorum Yap" class="pull-right btn btn-success">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

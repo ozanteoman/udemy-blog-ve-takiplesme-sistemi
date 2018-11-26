@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}
+    İletişim
+{% endblock %}
+{% block icerik %}
+    <div class="col-lg-5">
+        <h1 class="page-header">İletişim</h1>
+        {% if form.non_field_errors %}
+            {% for error in form.non_field_errors %}
+                <span class="text-danger"> <b>{{ error }}</b></span>
+            {% endfor %}
+        {% endif %}
+        <form method="get" action="{% url 'iletisim' %}">
+            {% for field in form %}
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-lg-2 col-md-2">
+                            <label for="{{ field.id_for_label }}" class="control-label">{{ field.label }}</label>
+                        </div>
+                        <div class="col-lg-10 col-md-10">
+                            {{ field }}
+                            <br>
+                            {% if field.errors %}
+                                {% for error in field.errors %}
+                                    <span class="text-danger"> <b>{{ error }}</b></span>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            <input type="submit" class="btn btn-sm btn-success">
+        </form>
+    </div>
+    <div class="col-lg-5">
+        <h1 class="page-header">Mesajlar</h1>
+        {% for mesaj in mesajlar %}
+            <div class="form-group">
+                <p class="lead">{{ forloop.counter1 }} {{ mesaj.isim }} {{ mesaj.soyisim }} {{ mesaj.email }} {{ mesaj.icerik }}</p>
+            </div>
+        {% empty %}
+            <p class="lead"><span class="glyphicon glyphicon-inbox"></span> Henüz Bir Mesaj Bulunamadı</p>
+        {% endfor %}
+    </div>
+{% endblock %}

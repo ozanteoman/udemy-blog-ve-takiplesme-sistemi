@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block ust_icerik %}
+    <script type="text/javascript" rel="script">
+        $(document).ready(function () {
+
+            $("#ogrenci_getir").click(function () {
+                $.ajax({
+                    type:'GET',
+                    url:"{% url 'deneme-ajax-2' %}",
+                    dataType:'json',
+                    data:{},
+                    success:function (data) {
+                        $("#gelen_mesaj").html(data.html)
+                    }
+                })
+            });
+
+            $("#ajax_deneme_form").submit(function (e) {
+                e.preventDefault();
+                var $this = $(this);
+                var type = $this.attr('method');
+                var action = $this.attr('action');
+                var data = $this.serialize();
+
+                $.ajax({
+                    url: action,
+                    type: type,
+                    data: data,
+                    success: function (data) {
+                        $this.append(data.isim)
+                    }
+                });
+
+                console.log(data);
+                console.log(action);
+                console.log(type);
+
+            });
+
+            $('#selam').click(function () {
+                var $this = $(this);
+                var url = $this.attr('url');
+                $.ajax({
+                    url: url,
+                    method: "POST",
+                    dataType: 'json',
+                    data: {'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                    success: function (data) {
+                        $this.html(data.msg)
+                    }
+                })
+            });
+
+            $('#naber').click(function () {
+                var $this = $(this);
+                var adres = $(this).attr('url');
+                $.ajax({
+                    url: adres,
+                    type: "GET",
+                    dataType: 'json',
+                    success: function (data) {
+                        $this.html(data.msg)
+                    }
+                })
+            });
+
+            $("button.deneme").click(function () {
+                $(this).html('iyim sen nasılsın?')
+
+            });
+
+            $("a").click(function (e) {
+                e.preventDefault();
+                var $this = $(this);
+                var href = $(this).attr('href');
+                console.log(href)
+                //var username = $this.attr('username','babacık');
+                //username = $this.attr('username')
+                //console.log(username)
+            })
+        })
+    </script>
+{% endblock %}
+
+{% block icerik %}
+    <div class="row">
+        <div class="col-lg-6 pull-center">
+            <button url="{% url 'deneme-ajax' %}" id="selam" name="selam" class="btn btn-success">
+                Selam
+            </button>
+            <button id="naber" url="{% url 'deneme' %}" name="naber" class="btn btn-danger">
+                Merhaba
+            </button>
+            <a href="{% url 'post-list' %}" username="teoman" class="btn btn-primary">
+                Tıklayın
+            </a>
+            <form method="post" id="ajax_deneme_form" action="{% url 'deneme-ajax' %}">
+                {% csrf_token %}
+                <input type="hidden" name="isim" value="Teoman">
+                <button class="btn btn-success" type="submit">
+                    Ajax isteği gönder
+                </button>
+            </form>
+        </div>
+    </div>
+    <div class="row">
+    <div class="col-lg-6 pull-center">
+        <h1>Render To String Kullanım</h1>
+        <button class="btn btn-success" id="ogrenci_getir">
+            Öğrenci Getir
+        </button>
+        <div id="gelen_mesaj">
+
+        </div>
+    </div>
+    </div>
+{% endblock %}

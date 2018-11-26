@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block ust_icerik %}
+    <script type="text/javascript" rel="script">
+        $(document).ready(function () {
+            $("#user_fallowing").on('click', '.fallow_button', function () {
+                var $this = $(this);
+                var $url = $this.attr('url');
+                var $username = $this.attr('username');
+                var $fallow_type = $this.attr("fallow_type");
+                var $modal = $("#profile_fallowing_modal");
+                $modal.attr('fallow_type', $fallow_type);
+                if ($fallow_type === "fallowed")
+                    $modal.find('.modal-title').html("Takip Edilenler");
+                else if ($fallow_type === "fallowers") {
+                    $modal.find('.modal-title').html("Takipçiler");
+                }
+
+                // ajax request başlangıç
+
+                $.ajax({
+                    url: $url,
+                    method: "GET",
+                    dataType: 'json',
+                    data: {'username': $username},
+                    success: function (data) {
+                        $modal.find('.modal-body').html(data.html);
+                        $modal.modal('show');
+                    }
+                })
+
+
+            });
+            $("#takip_et_cikar_button").click(function () {
+                var $this = $(this);
+                var $url = $this.attr('url');
+                var $takip_eden = $this.attr('takip_eden');
+                var $takip_edilen = $this.attr('takip_edilen');
+                var data = {fallower_username: $takip_eden, fallowed_username: $takip_edilen};
+                $.ajax({
+                    url: $url,
+                    type: 'GET',
+                    dataType: 'json',
+                    data: data,
+                    success: function (data) {
+                        if (data.is_valid) {
+                            $this.html(data.msg);
+                            $("#user_fallowing").html(data.html)
+                        }
+                    }
+                })
+
+            });
+            $("#profile_fallowing_modal").on('click', '#fallow_list .fallow .fallow-button', function (e) {
+                var $this = $(this);
+                var $modal_body = $this.closest('.modal-body');
+                var $modal = $($this.closest('.modal'));
+                var $fallow_type = $modal.attr('fallow_type');
+                var $owner = $modal.attr('owner');
+                var $span = $($this.closest('.fallow').find('span'));
+                var takip_edilen = $span.attr('takip_edilen');
+                var takip_eden = $span.attr('takip_eden');
+                var url = "{% url 'modal-takip-et-cikar' %}";
+                var data = {
+                    owner: $owner,
+                    fallow_type: $fallow_type,
+                    fallower_username: takip_eden,
+                    fallowed_username: takip_edilen
+                };
+                $.ajax({
+                    url: url,
+                    type: "GET",
+                    dataType: "json",
+                    data: data,
+                    success: function (data) {
+                        if (data.owner) {
+                            $modal_body.html(data.html);
+                            $("#user_fallowing").html(data.html_takip_render)
+                        }
+                        else {
+                            if (data.takip_durum) {
+                                $this.removeClass('btn-success');
+                                $this.addClass('btn-danger');
+                            }
+                            else {
+                                $this.removeClass('btn-danger');
+                                $this.addClass('btn-success');
+                            }
+                            $this.html(data.msg);
+                        }
+                    }
+
+                })
+            })
+
+        })
+    </script>
+{% endblock %}
+
+{% block title %} {{ user.profile.get_screen_name }}{% endblock %}
+
+{% block icerik %}
+    <div class="row">
+        <div class="col-lg-8 user-profile pull-center">
+            {% include 'fallowing/profile/include/fallowing_modal.html' %}
+            {% if request.user != user %}
+                <div>
+                    <button takip_edilen='{{ user.username }}' takip_eden='{{ request.user.username }}'
+                            url="{% url 'kullanici-takip-et-cikar' %}" id="takip_et_cikar_button"
+                            class="btn btn-success btn-md">
+                        {% if takip_ediyor_mu %}
+                            <b>Takipten Çıkar</b>
+                        {% else %}
+                            <b>Takip et</b>
+                        {% endif %}
+                    </button>
+                </div>
+            {% endif %}
+            <div class="text-center">
+                <img class="img-circle user-profile-img" src="{{ user.userprofile.get_profile_photo }}">
+            </div>
+            <div class="text-center">
+                <br/>
+                {% if user.userprofile.user_full_name %}
+                    <span class="text"><b>{{ user.userprofile.user_full_name|upper }}</b></span>
+                    <br/>
+                {% endif %}
+                <span class="text">
+                    <b>@{{ user.username }}</b>
+                </span>
+                <span class="text">
+                    <br>
+                    <b>{{ user.userprofile.get_sex_display }}</b>
+                </span>
+            </div>
+
+            <div id="user_fallowing" class="row">
+                {% include 'auths/profile/include/fallowing/fallowing_partion.html' %}
+            </div>
+
+            {% if request.user == user %}
+                {% include 'auths/profile/include/owner_navbar.html' %}
+            {% else %}
+                {% include 'auths/profile/include/visitor_navbar.html' %}
+            {% endif %}
+            <div>
+                {% block profil_icerik %}
+
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

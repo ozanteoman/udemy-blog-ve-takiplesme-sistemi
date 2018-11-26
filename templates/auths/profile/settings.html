@@ -1,0 +1,65 @@
+{% extends 'auths/profile/user_profile_base.html' %}
+{% load static %}
+
+{% block ust_icerik %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+    <link type="text/css" href="{% static 'bootstrap-datetime/bootstrap-datetime.css' %}" rel="stylesheet">
+    <script type="text/javascript" src="{% static 'bootstrap-datetime/bootstrap-datetime.js' %}" rel="script"></script>
+    <script>
+        $(document).ready(function () {
+            $('#datetimepicker1').datetimepicker({
+                format: "DD.MM.YYYY"
+            });
+        })
+    </script>
+{% endblock %}
+
+{% block profil_icerik %}
+    <div class="row">
+
+        <div class="col-lg-10 pull-center">
+            <form method="post" enctype="multipart/form-data" action="{% url 'user-settings' %}">
+                {% csrf_token %}
+                {% for field in form %}
+                    {% if field.name == 'dogum_tarihi' %}
+                        <div class="form-group">
+                            <label class="control-label"> {{ field.label }}</label>
+                            <div class='input-group date' id='datetimepicker1'>
+                                {{ field }}
+                                {% if field.errors %}
+                                    {% for error in field.errors %}
+                                        <span class="text-danger"><b>{{ error }}</b></span>
+                                    {% endfor %}
+                                {% else %}
+                                    {% if field.help_text %}
+                                        <span class="text-success"><b>{{ field.help_text }}</b></span>
+                                    {% endif %}
+                                {% endif %}
+                                <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="form-group">
+                            <label class="control-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                {% for error in field.errors %}
+                                    <span class="text-danger"><b>{{ error }}</b></span>
+                                {% endfor %}
+                            {% else %}
+                                {% if field.help_text %}
+                                    <span class="text-success"><b>{{ field.help_text }}</b></span>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+                <div class="form-group pull-right ">
+                    <input type="submit" value="Kaydet" class="btn btn-sm btn-success">
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

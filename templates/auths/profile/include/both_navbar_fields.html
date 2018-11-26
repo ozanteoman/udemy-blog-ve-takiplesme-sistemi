@@ -1,0 +1,4 @@
+<li role="presentation" class="{% if page == 'user-profile' %}active{% endif %}"><a
+        href="{% url 'user-profile' user.username %}">Gönderiler</a></li>
+<li role="presentation"
+    class="{% if page == 'about' %}active{% endif %}"><a href="{% url 'user-about' user.username %}">Hakkımda</a></li>

@@ -1,0 +1,40 @@
+{% extends 'base_is_anonymous.html' %}
+{% load static %}
+{% block title %}
+    Register
+{% endblock %}
+
+{% block icerik %}
+    <div class="row">
+        <div class="col-lg-5 pull-center">
+        <h2 class="page-header">
+            Register
+        </h2>
+            <form method="post" action="{% url 'register' %}">
+                {% csrf_token %}
+                {% for field in form %}
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <label class="control-label"> {{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    {% for error in field.errors %}
+                                        <span class="text-danger"><b>{{ error }}</b></span>
+                                    {% endfor %}
+                                {% else %}
+                                    {% if field.help_text %}
+                                        <span class="text-success"><b>{{ field.help_text }}</b></span>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+                <input type="submit" class="btn btn-sm btn-success" value="Kayıt Ol">
+                <span><b> veya hesabınız varsa giriş yapmak için <a
+                        href="{% url 'user-login' %}"> tıklayınız</a></b></span>
+            </form>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% load  static %}
+{% block title %}
+    Post List
+{% endblock %}
+
+{% block ust_icerik %}
+
+{% endblock %}
+
+
+{% block icerik %}
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="col-lg-8 col-lg-offset-2">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <form class="form-inline" action="{% url 'post-list' %}">
+                            {% for field in form %}
+                                <div class="form-group">
+                                    {{ field }}
+                                    {% for error in field.errors %}
+                                        <span class="text-danger"><b>{{ error }}</b></span>
+                                    {% endfor %}
+                                </div>
+                            {% endfor %}
+                            <input class="btn btn-success" value="Sorgula" type="submit">
+                        </form>
+                    </div>
+                </div>
+                {% for post in posts.object_list %}
+                    <h2><a href="{{ post.get_absolute_url }}"><span>{{ post.title }}</span></a>
+
+                        <small style="font-size: small">
+                            {{ post.get_yayin_taslak_html }}
+                            <a href="{% url 'add-remove-favorite' post.slug %}?next={% url 'post-list' %}"
+                               class="btn btn-sm btn-default">
+                                <span class="glyphicon glyphicon-star {% if request.user.username in post.get_added_favorite_user %}active{% endif %}"></span>
+                            </a>
+                            <span class="glyphicon glyphicon-time"></span> {{ post.created_date }}</small>
+                    </h2>
+                    {% if post.get_image %}
+                        <img class="img-responsive" src="{{ post.get_image }}">
+                    {% endif %}
+                    <p><b><span class="glyphicon glyphicon-user"></span>
+                        Yazar <a href="{% url 'user-profile' post.user.username %}">{{ post.user.username }}</a></b>
+                        <span title="Yorum Sayisi">
+                        <b>{{ post.get_comment_count }}</b> <span class="glyphicon glyphicon-comment"></span>
+                        </span>
+                        -
+                        <span title="Favorilere Eklenme Sayisi">
+                        <b>{{ post.get_favorite_count }}</b> <span class="glyphicon glyphicon-star active"></span>
+                        </span>
+                    </p>
+                    <p style="font-size: large;margin-top:20px;">{{ post.icerik|safe|truncatewords:50 }}</p>
+                {% empty %}
+                    <p>Aradığınız Kriterde Bir Blog Bulunamadı</p>
+                {% endfor %}
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="col-lg-8 col-lg-offset-2">
+                        {% if posts.has_other_pages %}
+                            <ul class="pagination">
+                                {% if posts.has_previous %}
+                                    <li><a href="?page={{ posts.previous_page_number }}{% if request.GET.taslak_yayin %}&taslak_yayin={{ request.GET.taslak_yayin }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">&laquo;</a>
+                                    </li>
+                                {% else %}
+                                    <li class="disabled"><span>&laquo;</span></li>
+                                {% endif %}
+                                {% for i in posts.paginator.page_range %}
+                                    {% if posts.number == i %}
+                                        <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span>
+                                        </li>
+                                    {% else %}
+                                        <li><a href="?page={{ i }}{% if request.GET.taslak_yayin %}&taslak_yayin={{ request.GET.taslak_yayin }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ i }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                {% if posts.has_next %}
+                                    <li><a href="?page={{ posts.next_page_number }}{% if request.GET.taslak_yayin %}&taslak_yayin={{ request.GET.taslak_yayin }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">&raquo;</a>
+                                    </li>
+                                {% else %}
+                                    <li class="disabled"><span>&raquo;</span></li>
+                                {% endif %}
+
+                            </ul>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
