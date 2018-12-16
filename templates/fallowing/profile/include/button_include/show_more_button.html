@@ -1,0 +1,9 @@
+{% if fallowing.has_other_pages %}
+    {% if fallowing.has_next %}
+        <div class="row  text-center">
+            <a id="fallow_paginate"
+               href="{% url "fallowed-or-fallowers-list" fallow_type %}?page={{ fallowing.next_page_number }}&username={{ username }}"
+               class="btn btn-link">Daha Fazla Göster</a>
+        </div>
+    {% endif %}
+{% endif %}

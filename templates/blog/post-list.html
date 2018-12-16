@@ -6,6 +6,82 @@
 {% endblock %}
 
 {% block ust_icerik %}
+    <script type="text/javascript" rel="script">
+        $(document).ready(function () {
+            $(".post").on('click', '.add-favorite-button', function (e) {
+                e.preventDefault();
+                var $this = $(this);
+                var $url = $this.attr('href');
+                $.ajax({
+                    url: $url,
+                    method: "GET",
+                    data: {},
+                    success: function (data) {
+                        var response = data.status;
+                        var count = data.count;
+                        var $span = $this.find('span');
+                        if (response === 'added')
+                            $span.addClass('active');
+                        else
+                            $span.removeClass('active');
+                        $this.closest('div').find('.post-favorite-count').html(count)
+                    }
+                })
+            }).on('click', '.post-favorite-span', function (e) {
+                e.preventDefault();
+                var $this = $(this);
+                var $url = $this.attr('url');
+                var $modal = $("#post-favorite-modal");
+                var $baslik = $this.closest('div.post').find('h2 span').html();
+                $.ajax({
+                    url: $url,
+                    method: "GET",
+                    dataType: "json",
+                    beforeSend: function () {
+                        $modal.modal('show');
+                    },
+                    success: function (data) {
+                        $modal.find('.modal-body').html(data.html).append(data.page_html)
+                        $modal.find('.modal-title').html($baslik);
+                    }
+                })
+            });
+
+            $("#post-favorite-modal").on('click', 'button.fallow-button', function (e) {
+                e.preventDefault();
+                var $this = $(this);
+                var $row = $this.closest('div.row');
+                var $url = $this.attr('url');
+                var $fallowed_user = $this.attr('fallowed_username');
+                var $fallower_user = $this.attr('fallower_username');
+                var new_data = {'fallowed_username': $fallowed_user, 'fallower_username': $fallower_user};
+                $.ajax({
+                    url: $url,
+                    dataType: 'json',
+                    method: "GET",
+                    data: new_data,
+                    success: function (data) {
+                        $row.html(data.html);
+                    }
+                })
+            }).on('click','#favorite-paginate',function (e) {
+                e.preventDefault();
+                var $this = $(this);
+                var $this_parent = $this.closest('div');
+                var $user_favorite_list = $this.closest('.modal-body').find('#user_favorite_list')
+                var $url = $this.attr('href');
+                $.ajax({
+                    url:$url,
+                    method:"GET",
+                    success:function (data) {
+                        $user_favorite_list.append(data.html);
+                        $user_favorite_list.after(data.page_html);
+                        $this_parent.remove();
+                    }
+                })
+            })
+        })
+    </script>
 
 {% endblock %}
 
@@ -13,6 +89,7 @@
 {% block icerik %}
     <div class="row">
         <div class="col-lg-12">
+            {% include 'blog/include/favorite/favorite-modal.html' %}
             <div class="col-lg-8 col-lg-offset-2">
                 <div class="row">
                     <div class="col-lg-12">
@@ -30,30 +107,35 @@
                     </div>
                 </div>
                 {% for post in posts.object_list %}
-                    <h2><a href="{{ post.get_absolute_url }}"><span>{{ post.title }}</span></a>
+                    <div class="post">
+                        <h2><a href="{{ post.get_absolute_url }}"><span>{{ post.title }}</span></a>
 
-                        <small style="font-size: small">
-                            {{ post.get_yayin_taslak_html }}
-                            <a href="{% url 'add-remove-favorite' post.slug %}?next={% url 'post-list' %}"
-                               class="btn btn-sm btn-default">
-                                <span class="glyphicon glyphicon-star {% if request.user.username in post.get_added_favorite_user %}active{% endif %}"></span>
-                            </a>
-                            <span class="glyphicon glyphicon-time"></span> {{ post.created_date }}</small>
-                    </h2>
-                    {% if post.get_image %}
-                        <img class="img-responsive" src="{{ post.get_image }}">
-                    {% endif %}
-                    <p><b><span class="glyphicon glyphicon-user"></span>
-                        Yazar <a href="{% url 'user-profile' post.user.username %}">{{ post.user.username }}</a></b>
-                        <span title="Yorum Sayisi">
-                        <b>{{ post.get_comment_count }}</b> <span class="glyphicon glyphicon-comment"></span>
+                            <small style="font-size: small">
+                                {{ post.get_yayin_taslak_html }}
+                                <a href="{% url 'add-remove-favorite' post.slug %}"
+                                   class="add-favorite-button btn btn-sm btn-default">
+                                    <span class="glyphicon glyphicon-star {% if request.user.username in post.get_added_favorite_user %}active{% endif %}"></span>
+                                </a>
+                                <span class="glyphicon glyphicon-time"></span> {{ post.created_date }}</small>
+                        </h2>
+                        {% if post.get_image %}
+                            <img class="img-responsive" src="{{ post.get_image }}">
+                        {% endif %}
+                        <p><b><span class="glyphicon glyphicon-user"></span>
+                            Yazar <a href="{% url 'user-profile' post.user.username %}">{{ post.user.username }}</a></b>
+                            <span title="Yorum Sayisi">
+                        <b class="post-comment-count">{{ post.get_comment_count }}</b> <span
+                                    class="glyphicon glyphicon-comment"></span>
                         </span>
-                        -
-                        <span title="Favorilere Eklenme Sayisi">
-                        <b>{{ post.get_favorite_count }}</b> <span class="glyphicon glyphicon-star active"></span>
+                            -
+                            <span url="{% url 'post-list-favorite-user' post.slug %}" class="post-favorite-span"
+                                  title="Favorilere Eklenme Sayisi">
+                        <b class="post-favorite-count">{{ post.get_favorite_count }}</b> <span
+                                    class="glyphicon glyphicon-star active"></span>
                         </span>
-                    </p>
-                    <p style="font-size: large;margin-top:20px;">{{ post.icerik|safe|truncatewords:50 }}</p>
+                        </p>
+                        <p style="font-size: large;margin-top:20px;">{{ post.icerik|safe|truncatewords:50 }}</p>
+                    </div>
                 {% empty %}
                     <p>Aradığınız Kriterde Bir Blog Bulunamadı</p>
                 {% endfor %}
@@ -64,7 +146,18 @@
                         {% if posts.has_other_pages %}
                             <ul class="pagination">
                                 {% if posts.has_previous %}
-                                    <li><a href="?page={{ posts.previous_page_number }}{% if request.GET.taslak_yayin %}&taslak_yayin={{ request.GET.taslak_yayin }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">&laquo;</a>
+                                    <li><a href="?page=
+
+
+
+
+
+
+
+
+
+
+                                            {{ posts.previous_page_number }}{% if request.GET.taslak_yayin %}&taslak_yayin={{ request.GET.taslak_yayin }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">&laquo;</a>
                                     </li>
                                 {% else %}
                                     <li class="disabled"><span>&laquo;</span></li>
@@ -74,12 +167,32 @@
                                         <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span>
                                         </li>
                                     {% else %}
-                                        <li><a href="?page={{ i }}{% if request.GET.taslak_yayin %}&taslak_yayin={{ request.GET.taslak_yayin }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ i }}</a>
+                                        <li><a href="?page=
+
+
+
+
+
+
+
+
+                                                {{ i }}{% if request.GET.taslak_yayin %}&taslak_yayin={{ request.GET.taslak_yayin }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ i }}</a>
                                         </li>
                                     {% endif %}
                                 {% endfor %}
                                 {% if posts.has_next %}
-                                    <li><a href="?page={{ posts.next_page_number }}{% if request.GET.taslak_yayin %}&taslak_yayin={{ request.GET.taslak_yayin }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">&raquo;</a>
+                                    <li><a href="?page=
+
+
+
+
+
+
+
+
+
+
+                                            {{ posts.next_page_number }}{% if request.GET.taslak_yayin %}&taslak_yayin={{ request.GET.taslak_yayin }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">&raquo;</a>
                                     </li>
                                 {% else %}
                                     <li class="disabled"><span>&raquo;</span></li>

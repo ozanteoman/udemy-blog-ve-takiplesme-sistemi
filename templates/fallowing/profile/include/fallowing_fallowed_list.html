@@ -1,33 +1,33 @@
 {% load fallowing_system %}
-<div id="fallow_list" class="row">
-    {% for row in fallowing %}
-        <div style="margin-bottom:25px" class="fallow col-lg-12">
-            {% if fallow_type == 'fallowed' %}
-                <img class="img-circle" style="width:70px" src="{{ row.fallowed.userprofile.get_profile_photo }}">
-                <span takip_edilen="{{ row.fallowed.username }}" takip_eden="{{ request.user.username }}">{{ row.fallowed.username }}</span>
-                {% if row.fallowed != request.user %}
-                    {% if row.fallowed|who_is_my_fallowed:my_fallowed %}
-                        {% include 'fallowing/profile/include/button_include/takip_birak_button.html' %}
-                    {% else %}
-                        {% include 'fallowing/profile/include/button_include/takip_et_button.html' %}
-                    {% endif %}
-                {% endif %}
-
-            {% elif fallow_type == 'fallowers' %}
-                <img class="img-circle" style="width:70px" src="{{ row.fallower.userprofile.get_profile_photo }}">
-                <span takip_edilen="{{ row.fallower.username }}" takip_eden="{{ request.user.username }}" >{{ row.fallower.username }}</span>
-                {% if row.fallower != request.user %}
-                    {% if row.fallower|who_is_my_fallowed:my_fallowed %}
-                        {% include 'fallowing/profile/include/button_include/takip_birak_button.html' %}
-                    {% else %}
-                        {% include 'fallowing/profile/include/button_include/takip_et_button.html' %}
-                    {% endif %}
+{% for row in fallowing %}
+    <div style="margin-bottom:25px" class="fallow col-lg-12">
+        {% if fallow_type == 'fallowed' %}
+            <img class="img-circle" style="width:70px" src="{{ row.fallowed.userprofile.get_profile_photo }}">
+            <span takip_edilen="{{ row.fallowed.username }}"
+                  takip_eden="{{ request.user.username }}">{{ row.fallowed.username }}</span>
+            {% if row.fallowed != request.user %}
+                {% if row.fallowed|who_is_my_fallowed:my_fallowed %}
+                    {% include 'fallowing/profile/include/button_include/takip_birak_button.html' %}
+                {% else %}
+                    {% include 'fallowing/profile/include/button_include/takip_et_button.html' %}
                 {% endif %}
             {% endif %}
-        </div>
-    {% empty %}
-        <p class="lead text-center text-danger">
-            Herhangi bir sonuç bulunamadı.
-        </p>
-    {% endfor %}
-</div>
+
+        {% elif fallow_type == 'fallowers' %}
+            <img class="img-circle" style="width:70px" src="{{ row.fallower.userprofile.get_profile_photo }}">
+            <span takip_edilen="{{ row.fallower.username }}"
+                  takip_eden="{{ request.user.username }}">{{ row.fallower.username }}</span>
+            {% if row.fallower != request.user %}
+                {% if row.fallower|who_is_my_fallowed:my_fallowed %}
+                    {% include 'fallowing/profile/include/button_include/takip_birak_button.html' %}
+                {% else %}
+                    {% include 'fallowing/profile/include/button_include/takip_et_button.html' %}
+                {% endif %}
+            {% endif %}
+        {% endif %}
+    </div>
+{% empty %}
+    <p class="lead text-center text-danger">
+        Herhangi bir sonuç bulunamadı.
+    </p>
+{% endfor %}

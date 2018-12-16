@@ -1,0 +1,11 @@
+<div id="user_favorite_list">
+    {% for user in user_list %}
+        <div class="row">
+            {% include 'blog/include/favorite/favorite-user-obj.html' %}
+        </div>
+    {% empty %}
+        <div class="row text-center text-danger">
+            <span>Gönderiyi Beğenen İlk Sen Ol</span>
+        </div>
+    {% endfor %}
+</div>

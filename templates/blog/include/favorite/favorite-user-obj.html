@@ -1,0 +1,20 @@
+{% load fallowing_system %}
+<div style="padding:10px;float:left;width:100%">
+    <div style="float:left;width:50px">
+        <img style="width:50px;height:50px" class="img-circle" src="{{ user.userprofile.get_profile_photo }}">
+    </div>
+    <div style="float:left;margin-top:15px;margin-left:10px;width:500px">
+        <div style="float:left">
+            {{ user.userprofile.get_screen_name }}
+        </div>
+        <div style="float:right">
+            {% if not request.user.username == user.username %}
+                {% if user|who_is_my_fallowed:my_fallowed_user %}
+                    {% include 'blog/include/favorite/buttons/takip_birak_button.html' %}
+                {% else %}
+                    {% include 'blog/include/favorite/buttons/takip_et_button.html' %}
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>

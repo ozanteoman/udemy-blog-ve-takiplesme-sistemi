@@ -1,6 +1,19 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block ust_icerik %}
+
+    <style rel="stylesheet" type="text/css">
+        .modal-dialog {
+            overflow-y: initial !important
+        }
+
+        .modal-body {
+            height: 250px;
+            overflow-y: auto;
+        }
+    </style>
+
     <script type="text/javascript" rel="script">
         $(document).ready(function () {
             $("#user_fallowing").on('click', '.fallow_button', function () {
@@ -17,20 +30,20 @@
                 }
 
                 // ajax request başlangıç
-
                 $.ajax({
                     url: $url,
                     method: "GET",
                     dataType: 'json',
                     data: {'username': $username},
                     success: function (data) {
-                        $modal.find('.modal-body').html(data.html);
+                        $modal.find('#fallow_paginate').closest('div').remove();
+                        $modal.find('.modal-body #fallow_list').html('').prepend(data.html).after(data.html_paginate);
                         $modal.modal('show');
                     }
                 })
 
-
             });
+
             $("#takip_et_cikar_button").click(function () {
                 var $this = $(this);
                 var $url = $this.attr('url');
@@ -49,7 +62,6 @@
                         }
                     }
                 })
-
             });
             $("#profile_fallowing_modal").on('click', '#fallow_list .fallow .fallow-button', function (e) {
                 var $this = $(this);
@@ -74,7 +86,25 @@
                     data: data,
                     success: function (data) {
                         if (data.owner) {
-                            $modal_body.html(data.html);
+                            if (data.fallow_type === 'fallowed') {
+                                var $fallow_list = $modal_body.find("#fallow_list");
+                                $fallow_list.html(data.html);
+                                $modal_body.find("#fallow_paginate").closest('.row').remove();
+                                $fallow_list.after(data.html_paginate)
+                            }
+
+                            else {
+                                if (data.takip_durum) {
+                                    $this.removeClass('btn-success');
+                                    $this.addClass('btn-danger');
+                                }
+                                else {
+                                    $this.removeClass('btn-danger');
+                                    $this.addClass('btn-success');
+                                }
+                                $this.html(data.msg);
+                            }
+
                             $("#user_fallowing").html(data.html_takip_render)
                         }
                         else {
@@ -89,10 +119,32 @@
                             $this.html(data.msg);
                         }
                     }
-
                 })
             })
+                .on('click', "#fallow_paginate", function (e) {
+                    e.preventDefault();
+                    var $this = $(this);
+                    var $fallow_list = $this.closest('.modal').find('#fallow_list');
+                    var $fallow_paginate = $this.closest('.modal').find('#fallow_paginate');
+                    var url = $this.attr('href');
+                    $.ajax({
+                        url: url,
+                        dataType: 'json',
+                        method: "GET",
+                        beforeSend: function () {
+                            var $img = $('<img class="img-responsive" src="{% static 'img/ajax-loader.gif' %}" />')
+                            $fallow_paginate.html($img);
+                        },
+                        success: function (data) {
+                            if (data.is_valid) {
+                                $fallow_list.append(data.html);
+                                $fallow_paginate.remove();
+                                $fallow_list.after(data.html_paginate);
+                            }
+                        }
+                    })
 
+                })
         })
     </script>
 {% endblock %}

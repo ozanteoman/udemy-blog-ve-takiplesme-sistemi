@@ -52,6 +52,13 @@ class Blog(models.Model):
         # self.favorite_blog.all() 1
         return self.favorite_blog.values_list('user__username', flat=True)
 
+    def get_added_favorite_user_as_object(self):
+        data_list = []
+        qs = self.favorite_blog.all()
+        for obj in qs:
+            data_list.append(obj.user)
+        return data_list
+
     def get_comment_count(self):
         yorum_sayisi = self.comment.count()
         if yorum_sayisi > 0 :
