@@ -1,4 +1,4 @@
-from django.shortcuts import render, HttpResponse, HttpResponseRedirect, get_object_or_404, reverse
+from django.shortcuts import render, HttpResponse, HttpResponseRedirect, get_object_or_404, reverse, Http404
 from django.http import HttpResponseForbidden, HttpResponseBadRequest
 from django.contrib import messages
 from django.db.models import Q
@@ -9,7 +9,7 @@ from django.http import JsonResponse
 
 from django.template.loader import render_to_string
 
-from .models import Blog, FavoriteBlog
+from .models import Blog, FavoriteBlog, NewComment
 from .forms import IletisimForm, BlogForm, PostSorguForm, CommentForm
 from .decorators import is_post
 
@@ -131,6 +131,55 @@ def add_comment(request, slug):
         new_comment.save()
         messages.success(request, 'Tebrikler Yorumunuz Başarıya Oluşturuldu.')
         return HttpResponseRedirect((blog.get_absolute_url()))
+
+
+def get_child_comment_form(request):
+    data = {'form_html': ''}
+    pk = request.GET.get('comment_pk')
+    comment = get_object_or_404(NewComment, pk=pk)
+    form = CommentForm()
+    form_html = render_to_string('blog/include/comment/comment-child-comment-form.html', context={
+        'form': form,
+        'comment': comment
+    }, request=request)
+
+    data.update({
+        'form_html': form_html
+    })
+
+    return JsonResponse(data=data)
+
+
+def new_add_comment(request, pk, model_type):
+    data = {'is_valid': True, 'blog_comment_html': '', 'model_type': model_type}
+    nesne = None
+    all_comment = None
+    form = CommentForm(data=request.POST)
+
+    if model_type == 'blog':
+        nesne = get_object_or_404(Blog, pk=pk)
+    elif model_type == 'comment':
+        nesne = get_object_or_404(NewComment, pk=pk)
+    else:
+        raise Http404
+
+    if form.is_valid():
+        icerik = form.cleaned_data.get('icerik')
+        NewComment.add_comment(nesne, model_type, request.user, icerik)
+
+    ## yorum ekranını güncelleyeceğimiz yer.
+    if model_type == 'comment':
+        nesne = nesne.content_object  # burada eğer gelen nesne comment ise blogu almak için.
+    # tüm yorumlarını tekrardan çekiyoruz.
+    comment_html = render_to_string('blog/include/comment/comment-list-partial.html', context={
+        'blog': nesne
+    })
+
+    data.update({
+        'blog_comment_html': comment_html
+    })
+
+    return JsonResponse(data=data)
 
 
 @login_required(login_url=reverse_lazy('user-login'))

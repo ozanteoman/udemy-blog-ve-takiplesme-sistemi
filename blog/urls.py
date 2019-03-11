@@ -1,6 +1,6 @@
 from django.conf.urls import url
 from .views import posts_list, post_update, post_create, post_delete, sanatcilar, post_detail, add_comment, \
-    add_or_remove_favorite, post_list_favorite_user
+    add_or_remove_favorite, post_list_favorite_user, new_add_comment, get_child_comment_form
 
 urlpatterns = [
     url(r'^$', posts_list, name='post-list'),
@@ -9,6 +9,8 @@ urlpatterns = [
     url(r'^post-update/(?P<slug>[-\w]+)/$', post_update, name='post-update'),
     url(r'^post-delete/(?P<slug>[-\w]+)/$', post_delete, name='post-delete'),
     url(r'^add-comment/(?P<slug>[-\w]+)/$', add_comment, name='add-comment'),
+    url(r'^get-child-comment-form/$', view=get_child_comment_form, name='get-child-comment-form'),
+    url(r'^new-add-comment/(?P<pk>[0-9]+)/(?P<model_type>[\w]+)/$', new_add_comment, name='new-add-comment'),
     url(r'^post-favorite-users/(?P<slug>[-\w]+)/$', post_list_favorite_user, name='post-list-favorite-user'),
     url(r'^add-remove-favorite/(?P<slug>[-\w]+)/$', add_or_remove_favorite, name='add-remove-favorite'),
     url(r'^sanatcilar/(?P<sayi>[0-9a-z]+)/', sanatcilar)

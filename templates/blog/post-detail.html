@@ -6,7 +6,54 @@
 {% endblock %}
 
 {% block ust_icerik %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var $window = $(this);
+            var $blog_comment_list = $window.find("#blog-comment-list");
+            $window.on('submit', '.comment-form', function (e) {
+                e.preventDefault();
+                var $this = $(this);
+                var $method = $this.attr('method');
+                var $data = $this.serialize();
+                var $url = $this.attr('action');
 
+                $.ajax({
+                    url: $url,
+                    type: $method,
+                    dataType: 'json',
+                    data: $data,
+                    success: function (data) {
+                        $blog_comment_list.html(data.blog_comment_html);
+                        $this.find('#id_icerik').val('');
+                    },
+                    error: function () {
+                        alert("Bir hata oluştu.")
+                    }
+                })
+
+            });
+            $window.on('click', '#blog-comment-list div.row a.yanitla-button', function (e) {
+                e.preventDefault();
+                var $this = $(this);
+                var $parent = $this.closest('div');
+                var $href = $this.attr('href');
+                var $comment_pk = $this.attr('comment_pk');
+                $.ajax({
+                    url: $href,
+                    type: "GET",
+                    dataType: "json",
+                    data: {comment_pk: $comment_pk},
+                    success: function (data) {
+                        var $form_html = data.form_html;
+                        $parent.find('.child-form-container').html($form_html);
+                    },
+                    error: function () {
+
+                    }
+                })
+            })
+        })
+    </script>
 {% endblock %}
 
 
@@ -57,33 +104,17 @@
 
             <div class="row">
                 <h2 class="page-header">Yorumlar ({{ blog.get_blog_comment_count }})</h2>
-                <div class="col-lg-12">
-                    {% for comment in blog.get_blog_comment %}
-                        <div class="row" style="margin-bottom:30px">
-                            <div class="col-lg-2">
-                                <div class="col-lg-12">
-                                    <img style="height: 50px;" class="img-circle"
-                                         src="{{ comment.user.userprofile.get_profile_photo }}">
-                                </div>
-                            </div>
-                            <div style="padding-left:0" class="col-lg-10">
-                                <span><b>{{ comment.user.userprofile.get_screen_name }}</b></span>
-                                <span>{{ comment.icerik }}</span>
-                                <br>
-                                <span class="pull-right"><b>{{ comment.comment_date }}</b></span>
-                            </div>
-                        </div>
-                    {% endfor %}
+                <div class="col-lg-12 " id="blog-comment-list">
+                    {% include 'blog/include/comment/comment-list-partial.html' with blog=blog %}
                 </div>
                 <div class="row" style="margin-top: 50px;">
-                    <form action="{% url 'add-comment' blog.slug %}" method="post">
+                    <form class="comment-form" action="{% url 'new-add-comment' blog.pk 'blog' %}" method="post">
                         {% csrf_token %}
-                        {{ form.media }}
                         {% for field in form %}
                             <div class="row">
                                 <div class="col-lg-2">
                                     <div class="col-lg-12">
-                                        <img style="height:75px;" class="img-circle"
+                                        <img style="height:75px;" class=" img-circle"
                                              src="{{ request.user.userprofile.get_profile_photo }}">
                                     </div>
                                 </div>

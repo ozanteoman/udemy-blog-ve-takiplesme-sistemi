@@ -2,6 +2,8 @@ from django.db import models
 from django.shortcuts import reverse
 from unidecode import unidecode
 from django.template.defaultfilters import slugify, safe
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
 from uuid import uuid4
 import os
@@ -61,7 +63,7 @@ class Blog(models.Model):
 
     def get_comment_count(self):
         yorum_sayisi = self.comment.count()
-        if yorum_sayisi > 0 :
+        if yorum_sayisi > 0:
             return yorum_sayisi
         return "Henüz Yorum Yok."
 
@@ -118,12 +120,20 @@ class Blog(models.Model):
         return self.comment.all()
 
     def get_blog_comment_count(self):
-        return len(self.get_blog_comment())
+        return len(self.get_blog_new_comment())
+
+    def get_blog_new_comment(self):
+        content_type = ContentType.objects.get_for_model(self)
+        object_id = self.id
+        all_comment = NewComment.objects.filter(content_type=content_type, object_id=object_id)
+        return all_comment
 
 
 class Comment(models.Model):
     user = models.ForeignKey(User, null=True, default=1, related_name='comment')
     blog = models.ForeignKey(Blog, null=True, related_name='comment')
+    # comment = models.ForeignKey(to='self', null=True)
+
     icerik = models.TextField(verbose_name='Yorum', max_length=1000, blank=False, null=True)
     comment_date = models.DateTimeField(auto_now_add=True, null=True)
 
@@ -137,6 +147,41 @@ class Comment(models.Model):
         if self.user.first_name:
             return "%s" % (self.user.get_full_name())
         return self.user.username
+
+
+class NewComment(models.Model):
+    user = models.ForeignKey(User, null=True, default=1, related_name='+')
+    is_parent = models.BooleanField(default=False)
+
+    content_type = models.ForeignKey(to=ContentType, null=True)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+
+    icerik = models.TextField(verbose_name='Yorum', max_length=1000, blank=False, null=True)
+    comment_date = models.DateTimeField(auto_now_add=True, null=True)
+
+    def __str__(self):
+        username = self.user.username
+        text = "{0} {1}".format(username, self.content_type.model)
+        return text
+
+    class Meta:
+        verbose_name_plural = "İç içe yorum sistemi"
+
+    @classmethod
+    def add_comment(cls, nesne, model_type, user, icerik):
+        content_type = ContentType.objects.get_for_model(nesne.__class__)
+        cls.objects.create(user=user, icerik=icerik, content_type=content_type, object_id=nesne.pk)
+        if model_type == 'comment':
+            nesne.is_parent = True
+            nesne.save()
+
+    def get_child_comment(self):
+        if self.is_parent:
+            content_type = ContentType.objects.get_for_model(self.__class__)
+            all_child_comment = NewComment.objects.filter(content_type=content_type, object_id=self.pk)
+            return all_child_comment
+        return None
 
 
 class FavoriteBlog(models.Model):

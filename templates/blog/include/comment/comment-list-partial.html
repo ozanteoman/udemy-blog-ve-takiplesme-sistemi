@@ -1,0 +1,41 @@
+{% for comment in blog.get_blog_new_comment %}
+    <div class="row" style="margin-bottom:30px">
+        <div class="col-lg-2">
+            <div class="col-lg-12">
+                <img style="height: 50px;" class="img-circle"
+                     src="{{ comment.user.userprofile.get_profile_photo }}">
+            </div>
+        </div>
+        <div style="padding-left:0" class="col-lg-10">
+            <span><b>{{ comment.user.userprofile.get_screen_name }}</b></span>
+            <span>{{ comment.icerik }}</span>
+            <br>
+            <span class="pull-right"><b>{{ comment.comment_date }}</b></span>
+            <a comment_pk="{{ comment.pk }}" href="{% url 'get-child-comment-form' %}" class="yanitla-button">
+                Yanıtla
+            </a>
+
+            <div>
+                {% if comment.is_parent %}
+                    {% for child_comment in comment.get_child_comment %}
+                        <div style="margin-top:20px">
+                            <div class="col-lg-1" style="padding:0;margin-bottom:10px">
+                                <img class="img-circle" style="width: 35px;height:35px"
+                                     src="{{ child_comment.user.userprofile.get_profile_photo }}">
+                            </div>
+                            <div class="col-lg-11" style="padding:0;margin-bottom:10px">
+                                <span><b>{{ child_comment.user.userprofile.get_screen_name }}</b></span>
+                                <span>{{ child_comment.icerik }}</span>
+                                <br>
+                                <span class="pull-right"><b>{{ comment.comment_date }}</b></span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="child-form-container">
+            </div>
+        </div>
+    </div>
+{% endfor %}
